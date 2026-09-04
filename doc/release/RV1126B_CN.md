@@ -1,5 +1,17 @@
 # rv1126b Release Note
 
+## rv1126b_usbplug_spinand_cont_v1.03.bin
+
+| 时间       | 文件                                   | 编译 commit  | 重要程度 |
+| ---------- | :------------------------------------- | ------------ | -------- |
+| 2026-09-04 | rv1126b_usbplug_spinand_cont_v1.03.bin | d86aef4ef0d3 | 普通     |
+
+### New
+
+1. 增加 mxic 和 gigadevice continues read mode 支持。
+
+------
+
 ## rv1126b_bl31_v1.14.elf
 
 | 时间       | 文件                  | 编译 commit | 重要程度 |

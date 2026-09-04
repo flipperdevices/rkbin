@@ -1,5 +1,17 @@
 # rv1126b Release Note
 
+## rv1126b_usbplug_spinand_cont_v1.03.bin
+
+| Date       | File                                   | Build commit | Severity |
+| ---------- | :------------------------------------- | ------------ | -------- |
+| 2026-03-03 | rv1126b_usbplug_spinand_cont_v1.03.bin | d86aef4ef0d3 | moderate |
+
+### New
+
+1. Support mxic and gigadevice spinand continues read mode.
+
+------
+
 ## rv1126b_bl31_v1.14.elf
 
 | Date       | File                  | Build commit | Severity  |
