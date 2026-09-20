@@ -532,6 +532,10 @@ function check_dirty()
 			echo "Skip clean: ${FILE}"
 			continue;
 		fi
+		if [[ "${FILE}" == *auto_merge* ]]; then
+			echo "Skip clean: ${FILE}"
+			continue;
+		fi
 		echo "    - ${FILE}"
 		if strings ${FILE} | grep '\-dirty ' ; then
 			echo "ERROR: ${FILE} is dirty"
