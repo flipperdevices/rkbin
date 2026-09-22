@@ -311,6 +311,9 @@ function sign_loader()
 		openssl rand -out ${LOADER_IV} 8
 	fi
 
+	# Reset settings
+	${TOOL_RK_SIGN} ss
+
 	# code471
 	DDR=`grep "Path1=bin/[^ ]*_ddr_" ${INI_PATH} | tr -d ' '`
 	if [ ! -z ${DDR} ]; then
