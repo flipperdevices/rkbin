@@ -24,6 +24,7 @@ KERNEL_ADDR_PLACEHOLDER="0xffffff01"
 RAMDISK_ADDR_PLACEHOLDER="0xffffff02"
 # key
 SIGNATURE_KEY_NODE="/signature/key-dev"
+AES_KEY=
 # dtb
 SPL_DTB="${UNPACK_LOADER}/u-boot-spl.dtb"
 UBOOT_DTB="${UNPACK_UBOOT}/fdt"
@@ -154,6 +155,23 @@ function process_args()
 		help
 		exit 1
 	fi
+
+	if [ -f "${ARG_KEY_DIR}/aes128.key" ]; then
+		AES_KEY="${ARG_KEY_DIR}/aes128.key"
+	fi
+
+	if grep -q '^CONFIG_FIT_CIPHER=y' "${SIGN_CONFIG}" || \
+		grep -q '^CONFIG_SPL_FIT_CIPHER=y' "${SIGN_CONFIG}"; then
+		check_aes_key
+	fi
+}
+
+function check_aes_key()
+{
+	if [ ! -f "${AES_KEY}" ] || [ "$(wc -c < "${AES_KEY}")" -ne 16 ]; then
+		echo "ERROR: ${ARG_KEY_DIR}/aes128.key must be a 16-byte AES-128 key"
+		exit 1
+	fi
 }
 
 function check_dir_exist()
@@ -212,6 +230,74 @@ function check_rsa_keys()
 	fi
 }
 
+function unpack_fit()
+{
+	if grep -q '^CONFIG_FIT_CIPHER=y' ${SIGN_CONFIG}; then
+		check_aes_key
+		${TOOL_FIT_UNPACK} -f $1 -o $2 -k ${AES_KEY} -encrypt
+	else
+		${TOOL_FIT_UNPACK} -f $1 -o $2
+	fi
+}
+
+function unpack_uboot_fit()
+{
+	if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG}; then
+		check_aes_key
+		${TOOL_FIT_UNPACK} -f $1 -o $2 -k ${AES_KEY} -encrypt
+	else
+		${TOOL_FIT_UNPACK} -f $1 -o $2
+	fi
+}
+
+function insert_aes_key()
+{
+	local DTB=$1
+
+	check_aes_key
+	fdtput -p -t bx ${DTB} /aes_key data $(xxd -p -c 1 ${AES_KEY})
+}
+
+function insert_spl_aes_key()
+{
+	if grep -q '^CONFIG_SPL_FIT_CIPHER_SW=y' ${SIGN_CONFIG}; then
+		insert_aes_key ${SPL_DTB}
+	else
+		check_aes_key
+	fi
+}
+
+function insert_uboot_aes_key()
+{
+	insert_aes_key ${UBOOT_DTB}
+}
+
+function rebuild_uboot_fdt()
+{
+	FDT_DATA=${UBOOT_DTB}
+
+	if fdtget -l ${ARG_SRC_DIR}/uboot.img /images/fdt/digest >/dev/null 2>&1 ; then
+		openssl dgst -sha256 -binary -out ${UBOOT_DTB}.digest ${UBOOT_DTB}
+	fi
+
+	if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG}; then
+		insert_spl_aes_key
+		openssl rand -out ${FDT_DATA}.iv 16
+		openssl dgst -sha256 -binary -out ${FDT_DATA}.digest ${FDT_DATA}
+		openssl enc -aes-128-ctr -in ${FDT_DATA} -out ${FDT_DATA}.aes128 \
+			-K "$(xxd -p -c 256 ${AES_KEY})" -iv "$(xxd -p -c 256 ${FDT_DATA}.iv)"
+	fi
+}
+
+function check_uboot_fdt_uncompressed()
+{
+	COMPRESSION=`fdtget -ts ${ITB_UBOOT} /images/fdt compression 2>/dev/null`
+	if [ "${COMPRESSION}" != "none" ]; then
+		echo "ERROR: U-Boot FDT compression must be none"
+		exit 1
+	fi
+}
+
 function sign_loader()
 {
 	echo
@@ -220,45 +306,75 @@ function sign_loader()
 	INI_PATH=`find ${UNPACK_LOADER}/ -name 'MINIALL.ini'`
 	sed -i "s|PATH=|PATH=${SIGN_OUTPUT}\/|g" ${INI_PATH}
 
+	if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG}; then
+		LOADER_IV=${UNPACK_LOADER}/nonce.bin
+		openssl rand -out ${LOADER_IV} 8
+	fi
+
 	# code471
 	DDR=`grep "Path1=bin/[^ ]*_ddr_" ${INI_PATH} | tr -d ' '`
 	if [ ! -z ${DDR} ]; then
 		DDR=${DDR/*=/}
 		NEW_DDR=`find ${UNPACK_LOADER}/ -name '*ddr*bin' | head -n 1`
+		DDR_DATA=${NEW_DDR}
+		if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG}; then
+			${TOOL_RK_SIGN} aes --key ${AES_KEY} --nonce ${LOADER_IV} --init 1 --align 4 --bin ${NEW_DDR} ${NEW_DDR}.aes128
+			DDR_DATA=${NEW_DDR}.aes128
+		fi
 		echo "${DDR} ${NEW_DDR}"
-		sed -i "s|${DDR}|${NEW_DDR}|g" ${INI_PATH}
+		sed -i "s|Path1=${DDR}|Path1=${DDR_DATA}|g" ${INI_PATH}
 	fi
 	# code472
 	USBPLUG=`grep "Path1=bin/[^ ]*_usbplug_" ${INI_PATH} | tr -d ' '`
 	if [ ! -z ${USBPLUG} ]; then
 		USBPLUG=${USBPLUG/*=/}
 		NEW_USBPLUG=`find ${UNPACK_LOADER}/ -name '*usbplug*bin' | head -n 1`
+		USBPLUG_DATA=${NEW_USBPLUG}
+		if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG}; then
+			${TOOL_RK_SIGN} aes --key ${AES_KEY} --nonce ${LOADER_IV} --init 2 --align 4 --bin ${NEW_USBPLUG} ${NEW_USBPLUG}.aes128
+			USBPLUG_DATA=${NEW_USBPLUG}.aes128
+		fi
 		echo "${USBPLUG} ${NEW_USBPLUG}"
-		sed -i "s|${USBPLUG}|${NEW_USBPLUG}|g" ${INI_PATH}
+		sed -i "s|Path1=${USBPLUG}|Path1=${USBPLUG_DATA}|g" ${INI_PATH}
 	fi
 	# FlashData
 	FlashData=`grep "FlashData=bin/[^ ]*_ddr_" ${INI_PATH} | tr -d ' '`
 	if [ ! -z ${FlashData} ]; then
 		FlashData=${FlashData/*=/}
 		NEW_FlashData=`find ${UNPACK_LOADER}/ -name '*FlashData*bin' | head -n 1`
+		FlashData_DATA=${NEW_FlashData}
+		if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG}; then
+			${TOOL_RK_SIGN} aes --key ${AES_KEY} --nonce ${LOADER_IV} --init 1 --align 4 --bin ${NEW_FlashData} ${NEW_FlashData}.aes128
+			FlashData_DATA=${NEW_FlashData}.aes128
+		fi
 		echo "${FlashData} ${NEW_FlashData}"
-		sed -i "s|${FlashData}|${NEW_FlashData}|g" ${INI_PATH}
+		sed -i "s|FlashData=${FlashData}|FlashData=${FlashData_DATA}|g" ${INI_PATH}
 	fi
 	# FlashBoot
 	FlashBoot=`grep "FlashBoot=bin/[^ ]*_spl_" ${INI_PATH} | tr -d ' '`
 	if [ ! -z ${FlashBoot} ]; then
 		FlashBoot=${FlashBoot/*=/}
 		NEW_FlashBoot=`find ${UNPACK_LOADER}/ -name '*FlashBoot*bin' | head -n 1`
+		FlashBoot_DATA=${NEW_FlashBoot}
+		if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG}; then
+			${TOOL_RK_SIGN} aes --key ${AES_KEY} --nonce ${LOADER_IV} --init 2 --align 4 --bin ${NEW_FlashBoot} ${NEW_FlashBoot}.aes128
+			FlashBoot_DATA=${NEW_FlashBoot}.aes128
+		fi
 		echo "${FlashBoot} ${NEW_FlashBoot}"
-		sed -i "s|${FlashBoot}|${NEW_FlashBoot}|g" ${INI_PATH}
+		sed -i "s|FlashBoot=${FlashBoot}|FlashBoot=${FlashBoot_DATA}|g" ${INI_PATH}
 	fi
 	# FlashBoost
 	FlashBoost=`grep "FlashBoost=bin/[^ ]*_boost_" ${INI_PATH} | tr -d ' '`
 	if [ ! -z ${FlashBoost} ]; then
 		FlashBoost=${FlashBoost/*=/}
 		NEW_FlashBoot=`find ${UNPACK_LOADER}/ -name '*FlashBoost*bin' | head -n 1`
+		FlashBoost_DATA=${NEW_FlashBoot}
+		if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG}; then
+			${TOOL_RK_SIGN} aes --key ${AES_KEY} --nonce ${LOADER_IV} --init 3 --align 4 --bin ${NEW_FlashBoot} ${NEW_FlashBoot}.aes128
+			FlashBoost_DATA=${NEW_FlashBoot}.aes128
+		fi
 		echo "${FlashBoost} ${NEW_FlashBoot}"
-		sed -i "s|${FlashBoost}|${NEW_FlashBoot}|g" ${INI_PATH}
+		sed -i "s|FlashBoost=${FlashBoost}|FlashBoost=${FlashBoost_DATA}|g" ${INI_PATH}
 	fi
 
 	${TOOL_BOOT_MERGER} ${INI_PATH}
@@ -272,9 +388,17 @@ function sign_loader()
 		CHIP_NAME=${RKCHIP}
 	fi
 
-	# sign
+	# sign settings
 	${TOOL_RK_SIGN} cc --chip ${CHIP_NAME: 2: 6}
 	${TOOL_RK_SIGN} lk --key ${RSA_PRI_KEY} --pubkey ${RSA_PUB_KEY}
+
+	# encrypt settings
+	if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG}; then
+		${TOOL_RK_SIGN} ss --flag=0x10
+		${TOOL_RK_SIGN} ss --nonce=${LOADER_IV}
+	fi
+
+	# sign loader !
 	if ls ${SIGN_OUTPUT}/*loader*.bin >/dev/null 2>&1 ; then
 		${TOOL_RK_SIGN} sl --loader ${SIGN_OUTPUT}/*loader*.bin
 	elif ls ${SIGN_OUTPUT}/MiniLoaderAll.bin >/dev/null 2>&1 ; then
@@ -324,10 +448,14 @@ function sign_uboot()
 		sed -i "s/rollback-index = ${VERSION}/rollback-index = <${ARG_ROLLBACK_IDX_UBOOT}>;/g" ${ITS_UBOOT}
 	fi
 
+	if grep -q '^CONFIG_FIT_CIPHER_SW=y' ${SIGN_CONFIG}; then
+		insert_uboot_aes_key
+	fi
 	if ! fdtget -l ${UBOOT_DTB} /signature >/dev/null 2>&1 ; then
 		${TOOL_MKIMAGE} -f ${ITS_UBOOT} -k ${ARG_KEY_DIR} -K ${UBOOT_DTB} -E -p ${OFFS_DATA} -r ${ITB_UBOOT} -v ${ARG_VER_UBOOT}
 		echo "## Adding RSA public key into ${UBOOT_DTB}"
 	fi
+	rebuild_uboot_fdt
 
 	if fdtget -l ${SPL_DTB} /signature >/dev/null 2>&1 ; then
 		fdtput -r ${SPL_DTB} /signature
@@ -335,6 +463,7 @@ function sign_uboot()
 
 	# sign
 	${TOOL_MKIMAGE} -f ${ITS_UBOOT} -k ${ARG_KEY_DIR} -K ${SPL_DTB} -E -p ${OFFS_DATA} -r ${ITB_UBOOT} -v ${ARG_VER_UBOOT}
+	check_uboot_fdt_uncompressed
 
 	# burn-key-hash
 	if [ "${ARG_BURN_KEY_HASH}" == "y" ]; then
@@ -369,7 +498,11 @@ function sign_uboot()
 	fi
 
 	# host check signature
-	${TOOL_FIT_CHECK_SIGN} -f ${ITB_UBOOT} -k ${SPL_DTB} -s
+	CHECK_SIGN_AES=
+	if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG}; then
+		CHECK_SIGN_AES="-a ${AES_KEY}"
+	fi
+	${TOOL_FIT_CHECK_SIGN} -f ${ITB_UBOOT} -k ${SPL_DTB} ${CHECK_SIGN_AES} -s
 
 	# minimize u-boot-spl.dtb: clear as 0 but not remove property.
 	if grep -q '^CONFIG_SPL_FIT_HW_CRYPTO=y' ${SIGN_CONFIG} ; then
@@ -427,7 +560,7 @@ function sign_fit()
 	echo "==================== sign ${SRC_FILE}: version=${ARG_VERSION}, rollback-index=${ARG_ROLLBACK_IDX} ===================="
 	cp ${UBOOT_DTB_ORIG} ${UBOOT_DTB}
 	rm -rf ${UNPACK_DIR}
-	${TOOL_FIT_UNPACK} -f ${ARG_SRC_DIR}/${SRC_FILE} -o ${UNPACK_DIR}
+	unpack_fit ${ARG_SRC_DIR}/${SRC_FILE} ${UNPACK_DIR}
 	check_rsa_algo ${ITS_FILE}
 
 	if ! grep -q '^CONFIG_FIT_SIGNATURE=y' ${SIGN_CONFIG} ; then
@@ -480,6 +613,9 @@ function sign_fit()
 	fi
 
 	# sign
+	if grep -q '^CONFIG_FIT_CIPHER_SW=y' ${SIGN_CONFIG}; then
+		insert_uboot_aes_key
+	fi
 	${TOOL_MKIMAGE} -f ${ITS_FILE} -k ${ARG_KEY_DIR} -K ${UBOOT_DTB} -E -p ${OFFS_DATA} -r ${ITB_FILE} -v ${ARG_VERSION}
 
 	# rollback-index read back check
@@ -492,7 +628,11 @@ function sign_fit()
 	fi
 
 	# host check signature
-	${TOOL_FIT_CHECK_SIGN} -f ${ITB_FILE} -k ${UBOOT_DTB}
+	CHECK_SIGN_AES=
+	if grep -q '^CONFIG_FIT_CIPHER=y' ${SIGN_CONFIG}; then
+		CHECK_SIGN_AES="-a ${AES_KEY}"
+	fi
+	${TOOL_FIT_CHECK_SIGN} -f ${ITB_FILE} -k ${UBOOT_DTB} ${CHECK_SIGN_AES}
 
 	# minimize u-boot.dtb: clearn as 0 but not remove property.
 	if grep -q '^CONFIG_FIT_HW_CRYPTO=y' ${SIGN_CONFIG} ; then
@@ -542,7 +682,7 @@ function unpack_loader_uboot()
 
 	# unpack uboot.img
 	rm -rf ${UNPACK_UBOOT}/
-	${TOOL_FIT_UNPACK} -f ${ARG_SRC_DIR}/uboot.img -o ${UNPACK_UBOOT}
+	unpack_uboot_fit ${ARG_SRC_DIR}/uboot.img ${UNPACK_UBOOT}
 
 	# csum uboot
 	CSUM1=`grep 'uboot_sha256sum=' ${SIGN_CONFIG} | awk -F "=" '{print $2}'`
