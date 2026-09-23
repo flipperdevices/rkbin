@@ -306,7 +306,7 @@ function sign_loader()
 	INI_PATH=`find ${UNPACK_LOADER}/ -name 'MINIALL.ini'`
 	sed -i "s|PATH=|PATH=${SIGN_OUTPUT}\/|g" ${INI_PATH}
 
-	if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG}; then
+	if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG} && ! grep -q '^CONFIG_SPL_FIT_CIPHER_SW=y' ${SIGN_CONFIG}; then
 		LOADER_IV=${UNPACK_LOADER}/nonce.bin
 		openssl rand -out ${LOADER_IV} 8
 	fi
@@ -320,7 +320,7 @@ function sign_loader()
 		DDR=${DDR/*=/}
 		NEW_DDR=`find ${UNPACK_LOADER}/ -name '*ddr*bin' | head -n 1`
 		DDR_DATA=${NEW_DDR}
-		if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG}; then
+		if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG} && ! grep -q '^CONFIG_SPL_FIT_CIPHER_SW=y' ${SIGN_CONFIG}; then
 			${TOOL_RK_SIGN} aes --key ${AES_KEY} --nonce ${LOADER_IV} --init 1 --align 4 --bin ${NEW_DDR} ${NEW_DDR}.aes128
 			DDR_DATA=${NEW_DDR}.aes128
 		fi
@@ -333,7 +333,7 @@ function sign_loader()
 		USBPLUG=${USBPLUG/*=/}
 		NEW_USBPLUG=`find ${UNPACK_LOADER}/ -name '*usbplug*bin' | head -n 1`
 		USBPLUG_DATA=${NEW_USBPLUG}
-		if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG}; then
+		if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG} && ! grep -q '^CONFIG_SPL_FIT_CIPHER_SW=y' ${SIGN_CONFIG}; then
 			${TOOL_RK_SIGN} aes --key ${AES_KEY} --nonce ${LOADER_IV} --init 2 --align 4 --bin ${NEW_USBPLUG} ${NEW_USBPLUG}.aes128
 			USBPLUG_DATA=${NEW_USBPLUG}.aes128
 		fi
@@ -346,7 +346,7 @@ function sign_loader()
 		FlashData=${FlashData/*=/}
 		NEW_FlashData=`find ${UNPACK_LOADER}/ -name '*FlashData*bin' | head -n 1`
 		FlashData_DATA=${NEW_FlashData}
-		if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG}; then
+		if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG} && ! grep -q '^CONFIG_SPL_FIT_CIPHER_SW=y' ${SIGN_CONFIG}; then
 			${TOOL_RK_SIGN} aes --key ${AES_KEY} --nonce ${LOADER_IV} --init 1 --align 4 --bin ${NEW_FlashData} ${NEW_FlashData}.aes128
 			FlashData_DATA=${NEW_FlashData}.aes128
 		fi
@@ -359,7 +359,7 @@ function sign_loader()
 		FlashBoot=${FlashBoot/*=/}
 		NEW_FlashBoot=`find ${UNPACK_LOADER}/ -name '*FlashBoot*bin' | head -n 1`
 		FlashBoot_DATA=${NEW_FlashBoot}
-		if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG}; then
+		if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG} && ! grep -q '^CONFIG_SPL_FIT_CIPHER_SW=y' ${SIGN_CONFIG}; then
 			${TOOL_RK_SIGN} aes --key ${AES_KEY} --nonce ${LOADER_IV} --init 2 --align 4 --bin ${NEW_FlashBoot} ${NEW_FlashBoot}.aes128
 			FlashBoot_DATA=${NEW_FlashBoot}.aes128
 		fi
@@ -372,7 +372,7 @@ function sign_loader()
 		FlashBoost=${FlashBoost/*=/}
 		NEW_FlashBoot=`find ${UNPACK_LOADER}/ -name '*FlashBoost*bin' | head -n 1`
 		FlashBoost_DATA=${NEW_FlashBoot}
-		if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG}; then
+		if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG} && ! grep -q '^CONFIG_SPL_FIT_CIPHER_SW=y' ${SIGN_CONFIG}; then
 			${TOOL_RK_SIGN} aes --key ${AES_KEY} --nonce ${LOADER_IV} --init 3 --align 4 --bin ${NEW_FlashBoot} ${NEW_FlashBoot}.aes128
 			FlashBoost_DATA=${NEW_FlashBoot}.aes128
 		fi
@@ -396,7 +396,7 @@ function sign_loader()
 	${TOOL_RK_SIGN} lk --key ${RSA_PRI_KEY} --pubkey ${RSA_PUB_KEY}
 
 	# encrypt settings
-	if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG}; then
+	if grep -q '^CONFIG_SPL_FIT_CIPHER=y' ${SIGN_CONFIG} && ! grep -q '^CONFIG_SPL_FIT_CIPHER_SW=y' ${SIGN_CONFIG}; then
 		${TOOL_RK_SIGN} ss --flag=0x10
 		${TOOL_RK_SIGN} ss --nonce=${LOADER_IV}
 	fi
