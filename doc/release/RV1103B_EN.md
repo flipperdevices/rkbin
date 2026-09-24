@@ -1,5 +1,26 @@
 # RV1103B Release Note
 
+## rv1103b_tee_ta_v1.06.bin
+
+| Date       | File                     | Build commit | Severity  |
+| ---------- | :----------------------- | ------------ | --------- |
+| 2026-09-24 | rv1103b_tee_ta_v1.06.bin | e48c4cffb    | important |
+
+### New
+
+1. Support the use of RSA public keys with lengths of 3072 and 4096 to replace the default public key in the TEE OS firmware.
+
+### Fixed
+
+| Index | Severity  | Update                                                       | Issue description                                            | Issue source |
+| ----- | --------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------ |
+| 1     | important | If the serial port is halted, no information will be printed | The non-secure world may halt the serial port, resulting in timeouts in serial port printing in the secure world, which in turn leads to timeouts in responding to external interrupts | 610227       |
+| 2     | important | Fix the panic caused by RSA verification failure             | A failure in RSA verification may inadvertently trigger an fault injection attack, resulting in a TEE OS panic | 639776       |
+| 3     | important | Fix crypto_service reserved field size mismatch with 32-bit TA | The 32-bit TA passes a 100-byte rk_cipher_config/rk_aead_config buffer, while the 64-bit TEE OS expects 104 bytes (8-byte void* reserved field), so the size check rejects the TA request | 646458       |
+| 4     | important | Integrate CVE patchs                                         | CVE-2026-53764<br />CVE-2026-85059<br />CVE-2026-42546<br />CVE-2025-10263<br />CVE-2026-41434<br />CVE-2026-53763<br />CVE-2026-45614<br />CVE-2026-33662<br />CVE-2026-33317<br />CVE-2025-46733 | -            |
+
+------
+
 ## rv1103b_ddr_864MHz{_tb}_v1.08.bin
 
 | Date       | File                              | Build commit | Severity  |
