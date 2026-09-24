@@ -1,5 +1,19 @@
 # rv1126b Release Note
 
+## rv1126b_bl32_v1.09.bin
+
+| Date       | File                   | Build commit | Severity  |
+| ---------- | :--------------------- | ------------ | --------- |
+| 2026-09-24 | rv1126b_bl32_v1.09.bin | e48c4cffb    | important |
+
+### Fixed
+
+| Index | Severity  | Update               | Issue description                                            | Issue source |
+| ----- | --------- | -------------------- | ------------------------------------------------------------ | ------------ |
+| 1     | important | Integrate CVE patchs | CVE-2026-53764<br />CVE-2026-85059<br />CVE-2026-42546<br />CVE-2025-10263<br />CVE-2026-41434<br />CVE-2026-53763<br />CVE-2026-45614<br />CVE-2026-33662<br />CVE-2026-33317 | -            |
+
+------
+
 ## rv1126b_usbplug_spinand_cont_v1.03.bin
 
 | Date       | File                                   | Build commit | Severity |
