@@ -582,6 +582,13 @@ check_commit_message()
 	echo "Checking commit message format..."
 	MSG=$(git log ${ARG_COMMIT} -1 --pretty=format:"%B")
 
+	# Commit IDs must not exceed 12 characters
+	LONG_COMMIT_ID=$(printf '%s\n' "$MSG" | grep -Eo '(^|[^[:alnum:]])[0-9a-fA-F]{13,}([^[:alnum:]]|$)' | sed -E 's/^[^[:alnum:]]//; s/[^[:alnum:]]$//' | head -n 1 || true)
+	if [ -n "$LONG_COMMIT_ID" ]; then
+		echo "ERROR: Commit ID '${LONG_COMMIT_ID}' is too long, please use 'git log --oneline' output"
+		exit 1
+	fi
+
 	# 1. Header capitalization
 	if echo "$MSG" | grep -q '^build from'; then
 		echo "ERROR: Please change 'build from' to 'Build from'"
