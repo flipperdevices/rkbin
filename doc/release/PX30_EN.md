@@ -1,5 +1,17 @@
 # PX30 Release Note
 
+## px30_usbplug_spinand_cont_v1.43.bin
+
+| Date       | File                                          | Build commit | Severity |
+| ---------- | :-------------------------------------------- | ------------ | -------- |
+| 2026-10-15 | px30_usbplug_spinand_cont_v1.43.bin | e29d2cb7edb4 | moderate |
+
+### New
+
+1. Add SPI NAND device TM1F1GUAI support.
+
+------
+
 ## px30_bl32_v2.22.bin
 
 | Date       | File                | Build Commit | Severity  |
