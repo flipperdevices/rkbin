@@ -58,9 +58,10 @@ When there is no -1, at least one review +1 from the patch owner or a reviewer i
 
 ## Commit Message Guidelines
 
-This document defines commit message format requirements for patches of different file types. The goals are:
+This document defines commit message format requirements for patches of different file types:
 
 - Make the current version traceable to the source repository through the commit message
+- Use the output of `git log --oneline` for referenced source commits
 - Unify the commit style
 - `Build from...` and `Update features...` are currently mandatory. If you are unsure what to put in `Update features`, it is recommended to use the same content as `Build from`.
 

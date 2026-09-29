@@ -58,9 +58,10 @@ bin/rk35/rk3562_bl32_v1.08.bin
 
 ## 提交规范
 
-本文档对不同类型的文件补丁做出 commit message 格式要求，目标是：
+本文档对不同类型的文件补丁做出 commit message 格式要求：
 
 - 通过提交信息，当前版本能在源码仓库中被溯源
+- 引用的源码提交记录请使用`git log --oneline` 的输出结果
 - 统一提交风格
 - 目前 `Build from...` 和 `Update features...`是必填项，如果不知道`Update features`的内容应该填写什么，建议跟`Build from`内容保持一致即可。
 
