@@ -1,5 +1,17 @@
 # PX30 Release Note
 
+## px30_{usbplug, miniloader}_wo_ftl_v1.43.bin
+
+| Date       | File                                          | Build commit | Severity |
+| ---------- | :-------------------------------------------- | ------------ | -------- |
+| 2026-09-29 | px30_{usbplug, miniloader}_wo_ftl_v1.43.bin | e29d2cb7edb4 | moderate |
+
+### New
+
+1. Add SPI NAND device TM1F1GUAI support.
+
+------
+
 ## px30_bl31_v1.37.elf
 
 | Date | File | Build commit | Severity |
