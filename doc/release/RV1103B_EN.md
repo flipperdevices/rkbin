@@ -1,5 +1,18 @@
 # RV1103B Release Note
 
+## rv1103b_hpmcu_wrap_v2.04rc7.bin
+
+| Date       | File                            | Build commit | Severity  |
+| ---------- | ------------------------------- | ------------ | --------- |
+| 2026-09-30 | rv1103b_hpmcu_wrap_v2.04rc7.bin | 8631322      | important |
+
+### New
+
+1. Upgrade RV1103B HPMCU wrap firmware to v2.04rc7.
+2. Adapt RKTRUST/RV1103BTOS_MCU_WRAP.ini MCU0 path.
+
+------
+
 ## rv1103b_tee_ta_v1.06.bin
 
 | Date       | File                     | Build commit | Severity  |

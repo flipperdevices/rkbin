@@ -1,5 +1,18 @@
 # RV1103B Release Note
 
+## rv1103b_hpmcu_wrap_v2.04rc7.bin
+
+| 时间       | 文件                            | 编译 commit | 重要程度 |
+| ---------- | ------------------------------- | ----------- | -------- |
+| 2026-09-30 | rv1103b_hpmcu_wrap_v2.04rc7.bin | 8631322     | 重要     |
+
+### New
+
+1. 升级 RV1103B HPMCU wrap 固件至 v2.04rc7。
+2. 适配 RKTRUST/RV1103BTOS_MCU_WRAP.ini 的 MCU0 路径。
+
+------
+
 ## rv1103b_tee_ta_v1.06.bin
 
 | 时间       | 文件                     | 编译 commit | 重要程度 |
