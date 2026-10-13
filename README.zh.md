@@ -34,6 +34,13 @@ bin/rk35/rk3562_bl31_v1.23.elf
 bin/rk35/rk3562_bl32_v1.08.bin
 ```
 
+> 文件名带有"_v5"关键字的表示来源或用于u-boot的v5分支。例如：
+>
+> RKBOOT/RK3568MINIALL_V5.ini
+>
+> bin/rk35/rk356x_spl_v5_v1.00.bin
+>
+> tools/uboot/v5/
 
 ## 提交原则
 

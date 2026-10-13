@@ -34,6 +34,13 @@ bin/rk35/rk3562_bl31_v1.23.elf
 bin/rk35/rk3562_bl32_v1.08.bin
 ```
 
+> Files with "_v5" in their names originate from or are intended for the v5 branch of U-Boot. For example:
+>
+> RKBOOT/RK3568MINIALL_V5.ini
+>
+> bin/rk35/rk356x_spl_v5_v1.00.bin
+>
+> tools/uboot/v5/
 
 ## Submission Principles
 
