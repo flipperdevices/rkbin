@@ -549,6 +549,21 @@ function sign_uboot()
 	done
 }
 
+function fit_fixup_address()
+{
+	local its=$1
+	local placeholder=$2
+	local addr=$3
+	local cells="<${addr}>"
+
+	# Use two cells when any of the upper 32 address bits are set.
+	if (( addr >> 32 )); then
+		cells="/bits/ 64 <${addr}>"
+	fi
+
+	sed -i "s|<[[:space:]]*${placeholder}[[:space:]]*>|${cells}|g" "${its}"
+}
+
 function sign_fit()
 {
 	SRC_FILE="$1.img"
@@ -606,9 +621,9 @@ function sign_fit()
 	FDT_ADDR_R=`filt_val "fdt_addr_r" ${SIGN_CONFIG}`
 	KERNEL_ADDR_R=`filt_val "kernel_addr_r" ${SIGN_CONFIG}`
 	RAMDISK_ADDR_R=`filt_val "ramdisk_addr_r" ${SIGN_CONFIG}`
-	sed -i "s/${FDT_ADDR_PLACEHOLDER}/${FDT_ADDR_R}/g"         ${ITS_FILE}
-	sed -i "s/${KERNEL_ADDR_PLACEHOLDER}/${KERNEL_ADDR_R}/g"   ${ITS_FILE}
-	sed -i "s/${RAMDISK_ADDR_PLACEHOLDER}/${RAMDISK_ADDR_R}/g" ${ITS_FILE}
+	fit_fixup_address ${ITS_FILE} ${FDT_ADDR_PLACEHOLDER} ${FDT_ADDR_R}
+	fit_fixup_address ${ITS_FILE} ${KERNEL_ADDR_PLACEHOLDER} ${KERNEL_ADDR_R}
+	fit_fixup_address ${ITS_FILE} ${RAMDISK_ADDR_PLACEHOLDER} ${RAMDISK_ADDR_R}
 
 	if [ "${ARG_ROLLBACK_PROTECT}" == "y" ]; then
 		VERSION=`grep 'rollback-index' ${ITS_FILE} | awk -F '=' '{ printf $2 }' | tr -d ' '`
