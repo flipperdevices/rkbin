@@ -74,6 +74,10 @@ This document defines commit message format requirements for patches of differen
 
 > **Note**: This document only defines the basic guideline requirements. To improve traceability, submitters may make reasonable adjustments based on these rules.
 
+### ini
+
+- TRUST.ini file: Firmware addresses in newly added files should use absolute addresses (the old relative address format is deprecated).
+
 
 ### binary
 
