@@ -1,5 +1,17 @@
 # RV1103B Release Note
 
+## rv1103b_tee_ta_v1.07.bin
+
+| Date       | File                     | Build commit | Severity  |
+| ---------- | :----------------------- | ------------ | --------- |
+| 2026-10-16 | rv1103b_tee_ta_v1.07.bin | a71726aef    | important |
+
+### New
+
+1. Compatible with RV1103BS/RV1106BS platforms.
+
+------
+
 ## rv1103b_hpmcu_wrap_v2.04rc7.bin
 
 | Date       | File                            | Build commit | Severity  |
