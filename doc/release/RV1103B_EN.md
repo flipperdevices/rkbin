@@ -1,5 +1,24 @@
 # RV1103B Release Note
 
+## rv1103b_spl_v1.02.bin
+
+| Date       | File                  | Build commit | Severity  |
+| ---------- | :-------------------- | ------------ | --------- |
+| 2026-10-23 | rv1103b_spl_v1.02.bin | ab071d7ddfc  | important |
+
+### New
+
+1. Add RV1106BS secure efuse support and fix RV1103B legacy secure OTP layout compatibility, so the secure boot enable flag and RSA key hash are read correctly on both RV1103B and RV1106BS.
+2. Fix SPL A/B rollback index read: after the function naming alignment, the rollback index override in SPL takes effect again.
+3. Update the SPL thunderboot entry blob shared by RV1103B/RV1106.
+4. Print board "Model: xxx" in the SPL serial log.
+5. Fix SPI NAND/NOR boot storage issues: wrong spi_slave pointer in SFC probe corrupting DM memory, SFC delay lines not reset before tuning, MTD BLK large reads not chunked by max_read_size, SPI_DMA_PREPARE wrongly cleared in partial read, and wrong ending_lba of GPT in SPI NAND factory mode.
+6. Fix eMMC boot issues: extend the CMD1 retry timeout to 1 second, stop sending CMD16 to set block length on eMMC, and fix dw_mmc incorrectly skipping sample clock configuration.
+7. Add support for more SPI NAND / SPI NOR devices, fix device parameters, and remove QUADIO read-cache variants and duplicate entries.
+8. Skip the legacy pinctrl-rockchip driver for RV1103B to reduce SPL size.
+
+------
+
 ## rv1103b_tee_ta_v1.07.bin
 
 | Date       | File                     | Build commit | Severity  |

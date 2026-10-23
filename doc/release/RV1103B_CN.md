@@ -1,5 +1,24 @@
 # RV1103B Release Note
 
+## rv1103b_spl_v1.02.bin
+
+| 时间       | 文件                  | 编译 commit | 重要程度 |
+| ---------- | :-------------------- | ----------- | -------- |
+| 2026-10-23 | rv1103b_spl_v1.02.bin | ab071d7ddfc | 重要     |
+
+### New
+
+1. 新增 RV1106BS secure efuse 支持，并修复 RV1103B legacy secure OTP 布局兼容性问题，secure boot 使能标志与 RSA key hash 在 RV1103B/RV1106BS 上均能正确读取。
+2. 修复 SPL A/B 回滚索引读取：函数命名对齐后，SPL 内回滚索引读取恢复生效。
+3. 更新 RV1103B/RV1106 共用的 SPL thunderboot 入口固件。
+4. SPL 串口日志打印板级 "Model: xxx" 信息。
+5. 修复 SPI NAND/NOR 启动存储路径问题：SFC probe 阶段 spi_slave 指针错用破坏 DM 内存、SFC tuning 前未复位 delay line、MTD BLK 大块读未按 max_read_size 分块、partial read 误清 SPI_DMA_PREPARE、SPI NAND factory 模式 GPT 分区 ending_lba 计算错误。
+6. 修复 eMMC 启动问题：CMD1 重试超时延长为 1 秒、eMMC 不再下发 CMD16 设置块长度、dw_mmc 误跳过 sample clock 配置。
+7. 新增多款 SPI NAND / SPI NOR 颗粒支持，修正部分颗粒参数，移除 QUADIO 读缓存变体与重复表项。
+8. 裁剪 RV1103B 不使用的 legacy pinctrl-rockchip 驱动，减小 SPL 体积。
+
+------
+
 ## rv1103b_tee_ta_v1.07.bin
 
 | 时间       | 文件                     | 编译 commit | 重要程度 |
