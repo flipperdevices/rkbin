@@ -1,5 +1,24 @@
 # RV1103B Release Note
 
+## rv1103b_ddr_864MHz{_tb}_v1.09.bin
+
+| Date       | File                              | Build commit | Severity  |
+| ---------- | :-------------------------------- | ------------ | --------- |
+| 2026-10-26 | rv1103b_ddr_864MHz{_tb}_v1.09.bin | a27d08667d   | important |
+
+### New
+
+1. Add support for RV1106BS.
+
+### Fixed
+
+| Index | Severity  | Update                         | Issue description      | Issue source |
+| ----- | --------- | ------------------------------ | ---------------------- | ------------ |
+| 1     | important | Adjust DQS OE timing           | Improve DDR stability  | -            |
+| 2     | important | Tune DDR2 signal configuration | Improve DDR2 stability | -            |
+
+------
+
 ## rv1103b_spl_v1.02.bin
 
 | Date       | File                  | Build commit | Severity  |
