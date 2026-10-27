@@ -1,5 +1,17 @@
 # RV1103B Release Note
 
+## rv1103b_spl_v5_v1.00.bin
+
+| Date       | File                     | Build commit | Severity  |
+| ---------- | :----------------------- | ------------ | -------- |
+| 2026-10-27 | rv1103b_spl_v5_v1.00.bin | f27a0645d26d | important |
+
+### New
+
+1. Initial version based on U-Boot v5 branch.
+
+------
+
 ## rv1103b_ddr_864MHz{_tb}_v1.09.bin
 
 | Date       | File                              | Build commit | Severity  |
