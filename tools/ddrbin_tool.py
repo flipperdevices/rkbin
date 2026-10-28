@@ -1608,7 +1608,7 @@ base_info_full = {
 
 uart_iomux_info_template = {
     'uart_iomux_addr0': {'value': 0, 'num_base': 'hex', 'index': 'uart_iomux_index_u16', 'position': 'uart_iomux_addr0', 'shift': 0, 'mask': 0xffffffff, 'version': 6},
-    'uart_iomux_mask0': {'value': 0, 'num_base': 'hex', 'index': 'uart_iomux_index_u16', 'position': 'uart_iomux_val0', 'shift': 0, 'mask': 0xffffffff, 'version': 6},
+    'uart_iomux_mask0': {'value': 0, 'num_base': 'hex', 'index': 'uart_iomux_index_u16', 'position': 'uart_iomux_mask0', 'shift': 0, 'mask': 0xffffffff, 'version': 6},
     'uart_iomux_val0': {'value': 0, 'num_base': 'hex', 'index': 'uart_iomux_index_u16', 'position': 'uart_iomux_val0', 'shift': 0, 'mask': 0xffffffff, 'version': 6},
 }
 
@@ -1952,6 +1952,11 @@ def txt_data_2_bin_data(info_from_txt, info_from_bin, ddrbin_index, write_in, ve
     #print(info_from_txt)
 
     modefy_2_bin_data(info_from_txt, write_in, ddrbin_index, version, read_out)
+    if 'uart_iomux_info' in write_in:
+        write_in['uart_iomux_info'] = {}
+        for key, value in info_from_txt.items():
+            if value['index'] == 'uart_iomux_index_u16':
+                write_in['uart_iomux_info'][key] = value['value'] & 0xffffffff
 
     return 0
 
@@ -2156,7 +2161,7 @@ def ddrbin_tool(argc, argv):
     verinfo_editable_offset = 0
     verinfo_editable_length = 17
 
-    print("version v1.35 20260530")
+    print("version v1.36 20261028")
     print("python {}, {}, {}".format(sys.version.split(' ', 1)[0], platform.system(), platform.machine()))
     if sys.version_info < (3, 6):
         print("Warning: Please installed Python 3.6 or later.")
